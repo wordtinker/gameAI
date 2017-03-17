@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Include="FSM.cs" />
     <Compile Include="Miner.cs" />
+    <Compile Include="MinersWife.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

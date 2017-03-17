@@ -1,6 +1,5 @@
 ﻿namespace WestWorld
 {
-    // TODO comment
     interface IState<T>
     {
         // one shot method on entering state
@@ -11,19 +10,24 @@
         void Exit(T entity);
     }
 
-    // TODO comment
+    /// Simple generic FSM with 2 inner states : current, global and memory of
+    /// previous state.
+    /// Current and global states are evaluated on each Update();
     class FSM<T>
     {
         // entity that FSM is holding state for
         private T owner;
-        // TODO
-        //public Global GlobalState { get; } = new Global();
         private IState<T> currentState;
+        private IState<T> previousState;
+        public IState<T> PreviousState { get; }
+        public IState<T> GlobalState { get; set; }
         public IState<T> State
         {
             get { return currentState; }
             set
             {
+                //keep a record of the previous state
+                previousState = currentState;
                 currentState?.Exit(owner);
                 currentState = value;
                 currentState?.Enter(owner);
@@ -35,9 +39,12 @@
         }
         public virtual void Update()
         {
-            // TODO
-            //GlobalState?.Execute(this.owner);
+            GlobalState?.Execute(owner);
             State?.Execute(owner);
+        }
+        public void RevertToPreviousState()
+        {
+            State = previousState;
         }
     }
 }

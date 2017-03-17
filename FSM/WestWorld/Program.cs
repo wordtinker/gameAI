@@ -38,9 +38,11 @@ namespace WestWorld
         static void Main(string[] args)
         {
             BaseGameEntity miner = new Miner();
+            BaseGameEntity minersWife = new MinersWife();
             for (int i = 0; i < 40; i++)
             {
                 miner.Update();
+                minersWife.Update();
                 Thread.Sleep(500);
                 System.Console.WriteLine();
             }
