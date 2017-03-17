@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 
 namespace WestWorld
 {
@@ -10,7 +11,13 @@ namespace WestWorld
         saloon
     }
 
-    abstract class BaseGameEntity
+    enum Messages
+    {
+        HiHoneyImHome,
+        StewReady
+    }
+
+    abstract class BaseGameEntity : IEventHandler
     {
         //this is the next valid ID. Each time a BaseGameEntity is instantiated
         //this value is updated
@@ -26,7 +33,7 @@ namespace WestWorld
         }
         // Methods
         public abstract void Update();
-
+        abstract public bool HandleMessage(Telegram message);
         public override string ToString()
         {
             return $"{GetType()} with id: {id}";
@@ -37,14 +44,17 @@ namespace WestWorld
     {
         static void Main(string[] args)
         {
-            BaseGameEntity miner = new Miner();
-            BaseGameEntity minersWife = new MinersWife();
+            Miner miner = new Miner();
+            MinersWife minersWife = new MinersWife();
+            miner.Wife = minersWife;
+            minersWife.Husband = miner;
             for (int i = 0; i < 40; i++)
             {
                 miner.Update();
                 minersWife.Update();
+                MessageBroker.Instance.DispatchDelayedMessages();
                 Thread.Sleep(500);
-                System.Console.WriteLine();
+                Console.WriteLine();
             }
         }
     }

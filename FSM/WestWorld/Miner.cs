@@ -2,6 +2,31 @@
 
 namespace WestWorld
 {
+
+    class EatStew : IState<Miner>
+    {
+        public void Enter(Miner entity)
+        {
+            Console.WriteLine($"{entity}: Smells Reaaal goood Elsa!");
+        }
+
+        public void Execute(Miner entity)
+        {
+            Console.WriteLine($"{entity}: Tastes real good too!");
+            entity.StateMachine.RevertToPreviousState();
+        }
+
+        public void Exit(Miner entity)
+        {
+            Console.WriteLine($"{entity} : Thankya li'lle lady. Ah better get back to whatever ah wuz doin'");
+        }
+
+        public bool OnMessage(Miner entity, Telegram message)
+        {
+            return false;
+        }
+    }
+
     /// <summary>
     ///  miner will go home and sleep until his fatigue is decreased
     ///  sufficiently
@@ -14,6 +39,13 @@ namespace WestWorld
             {
                 Console.WriteLine($"{entity}: Walkin' home");
                 entity.Location = LocationType.shack;
+                MessageBroker.Instance.Dispatch(new Telegram
+                {
+                    Delay = 0,
+                    Sender = entity,
+                    Receiver = entity.Wife,
+                    Message = (int)Messages.HiHoneyImHome
+                });
             }
         }
 
@@ -36,6 +68,16 @@ namespace WestWorld
         public void Exit(Miner entity)
         {
             Console.WriteLine($"{entity}: Leaving the house");
+        }
+        public bool OnMessage(Miner entity, Telegram message)
+        {
+            if (message.Message == (int)Messages.StewReady)
+            {
+                Console.WriteLine($"{entity}: Okay hun, ahm a - comin'!");
+                entity.StateMachine.State = entity.StateMachine.EatStew;
+                return true;
+            }
+            return false;
         }
     }
 
@@ -64,6 +106,8 @@ namespace WestWorld
         {
             Console.WriteLine($"{entity}: Leaving the saloon, feelin' good");
         }
+
+        public bool OnMessage(Miner entity, Telegram message) { return false; }
     }
 
     /// <summary>
@@ -107,6 +151,8 @@ namespace WestWorld
         {
             Console.WriteLine($"{entity}: Leavin' the bank");
         }
+
+        public bool OnMessage(Miner entity, Telegram message) { return false; }
     }
 
     /// <summary>
@@ -154,6 +200,8 @@ namespace WestWorld
         {
             Console.WriteLine($"{entity}: Ah'm leavin' the gold mine with mah pockets full o' sweet gold");
         }
+        
+        public bool OnMessage(Miner entity, Telegram message) { return false; }
     }
 
     /// <summary>
@@ -167,6 +215,7 @@ namespace WestWorld
         internal IState<Miner> VisitBankAndDepositGold { get; } = new VisitBankAndDepositGold();
         internal IState<Miner> QuenchThirst { get; } = new QuenchThirst();
         internal IState<Miner> GoHomeAndSleepTilRested { get; } = new GoHomeAndSleepTilRested();
+        internal IState<Miner> EatStew { get; } = new EatStew();
 
         public MinerFSM(Miner owner) : base(owner)
         {
@@ -185,13 +234,15 @@ namespace WestWorld
         internal int Fatigue { get; set; }
         //how much money the miner has deposited in the bank
         internal int MoneyInBank { get; private set; }
+        // Miner's wife
+        internal BaseGameEntity Wife { get; set; }
         //the higher the value, the thirstier the miner
         private int thirst;
 
         private const int ThirstLevel = 5;
         private const int TirednessThreshold = 5;
         private const int Capacity = 5;
-        public const int ComfortLevel = 15;
+        public const int ComfortLevel = 8;
 
         // a pointer to FSM
         internal MinerFSM StateMachine { get; private set; }
@@ -231,6 +282,10 @@ namespace WestWorld
         {
             thirst = 0;
             MoneyInBank -= 2;
+        }
+        public override bool HandleMessage(Telegram message)
+        {
+            return StateMachine.HandleMessage(message);
         }
     }
 }
