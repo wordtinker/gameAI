@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace DFS
+namespace UniformedGraphSearches
 {
     enum NodeIndex
     {
@@ -21,12 +21,12 @@ namespace DFS
 
     class GraphEdge
     {
-        //An edge connects two nodes. Valid node indices are always positive.
+        //An edge connects two nodes. Valid node indexes are always positive.
         public int From { get; set; }
         public int To { get; set; }
         //the cost of traversing the edge
         public double Cost { get; set; }
-        public GraphEdge() : this((int)NodeIndex.Invalid, (int)NodeIndex.Invalid,1.0) { }
+        public GraphEdge() : this((int)NodeIndex.Invalid, (int)NodeIndex.Invalid, 1.0) { }
         public GraphEdge(int from=(int)NodeIndex.Invalid, int to=(int)NodeIndex.Invalid, double cost=1.0)
         {
             From = from;
@@ -274,13 +274,257 @@ namespace DFS
             }
             Console.WriteLine("----------------------------");
         }
+        public static void Print<TNode, TEdge>(this SearchResult<TNode, TEdge> result)
+            where TNode : GraphNode
+            where TEdge : GraphEdge
+        {
+            Console.WriteLine($"Have been searching path from {result.Source} to {result.Target}.");
+            Console.WriteLine("Path that has been found:");
+            foreach (int node in result.PathToTarget)
+            {
+                Console.Write($"{node} ");
+            }
+            Console.WriteLine();
+            Console.WriteLine("Visited nodes:");
+            foreach (TEdge edge in result.SpanningTree)
+            {
+                Console.WriteLine($"\t{edge.From} -> {edge.To}, spend {edge.Cost}");
+            }
+        }
+    }
+
+    class SearchResult<TNode,TEdge>
+    {
+        public int Source { get; internal set; }
+        public int Target { get; internal set; }
+        // true if a path to the target has been found
+        public bool Found { get; internal set; }
+        // returns a vector containing all the edges the search has examined
+        public List<TEdge> SpanningTree { get; } = new List<TEdge>();
+        // returns a list of node indexes that comprise the shortest path
+        // from the source to the target
+        public List<int> PathToTarget { get; } = new List<int>();  
+    }
+
+    /// <summary>
+    /// Depth-first search (DFS) is an algorithm for traversing or searching tree or graph data structures.
+    /// One starts at the root (selecting some arbitrary node as the root in the case of a graph)
+    /// and explores as far as possible along each branch before backtracking.
+    /// </summary>
+    static class DFS
+    {
+        private enum Visit
+        {
+            Unvisited = 0,
+            Visited
+        }
+
+        // this records the indexes of all the nodes that are visited as the
+        // search progresses. As the search progresses,
+        // every time a node is visited its corresponding element will be
+        // set to visited.
+        private static Visit[] visited;
+        // As the graph
+        // search proceeds, this vector stores the route to the target node by recording
+        // the parents of each node at the relevant index.For example, if the path to
+        // the target follows the nodes 3 - 8 - 27, then m_Route[8] will hold 3 and
+        // m_Route[27] will hold 8.
+        private static int[] route;
+
+        private static void SetPathToTarget<TNode, TEdge>(SearchResult<TNode, TEdge> result, int source, int target)
+        {
+            int node = target;
+            result.PathToTarget.Add(node);
+            while (node != source)
+            {
+                node = route[node];
+                result.PathToTarget.Insert(0, node);
+            }
+        }
+
+        public static SearchResult<TNode, TEdge> SearchDFS<TNode, TEdge>(this SparseGraph<TNode, TEdge> graph, int source, int target = -1)
+            where TNode : GraphNode
+            where TEdge : GraphEdge, new()
+        {
+            // reset search conditions
+            visited = new Visit[graph.NumNodes];
+            route = Enumerable.Repeat(-1, graph.NumNodes).ToArray();
+            SearchResult<TNode, TEdge> result = new SearchResult<TNode, TEdge> {Source = source, Target = target };
+            // Create a stack of edges
+            Stack<TEdge> stack = new Stack<TEdge>();
+            // create a dummy edge and put on the stack
+            TEdge dummy = new TEdge { From = source, To = source, Cost = 0 };
+            stack.Push(dummy);
+            // while there are edges in the stack keep searching
+            while (stack.Count > 0)
+            {
+                // grab the next edge
+                TEdge next = stack.Pop();
+                // make a note of the parent of the node this edge points to
+                route[next.To] = next.From;
+                // put it on the tree. (making sure the dummy edge is not placed on the tree)
+                if (next != dummy)
+                {
+                    result.SpanningTree.Add(next);
+                }
+                // and mark it visited
+                visited[next.To] = Visit.Visited;
+                // if the target has been found the method can return success
+                if (next.To == target)
+                {
+                    result.Found = true;
+                    SetPathToTarget(result, source, target);
+                    return result;
+                }
+                // push the edges leading from the node this edge points to onto
+                // the stack (provided the edge does not point to a previously 
+                // visited node)
+                foreach (TEdge edge in graph.Edges(next.To))
+                {
+                    if (visited[edge.To] == Visit.Unvisited)
+                    {
+                        stack.Push(edge);
+                    }
+                }
+            }
+            // no path to target
+            return result;
+        }
+    }
+
+    /// <summary>
+    /// The BFS algorithm fans out from the source node and examines each of
+    /// the nodes its edges lead to before fanning out from those nodes and examining
+    /// all the edges they connect to and so on.You can think of the search as
+    /// exploring all the nodes that are one edge away from the source node, then
+    /// all the nodes two edges away, then three edges, and so on until the target
+    /// node is found.
+    /// </summary>
+    static class BFS
+    {
+        private enum Visit
+        {
+            Unvisited = 0,
+            Visited
+        }
+
+        // this records the indexes of all the nodes that are visited as the
+        // search progresses. As the search progresses,
+        // every time a node is visited its corresponding element will be
+        // set to visited.
+        private static Visit[] visited;
+        // As the graph
+        // search proceeds, this vector stores the route to the target node by recording
+        // the parents of each node at the relevant index.For example, if the path to
+        // the target follows the nodes 3 - 8 - 27, then m_Route[8] will hold 3 and
+        // m_Route[27] will hold 8.
+        private static int[] route;
+
+        private static void SetPathToTarget<TNode, TEdge>(SearchResult<TNode, TEdge> result, int source, int target)
+        {
+            int node = target;
+            result.PathToTarget.Add(node);
+            while (node != source)
+            {
+                node = route[node];
+                result.PathToTarget.Insert(0, node);
+            }
+        }
+
+        /// <summary>
+        /// The algorithm for BFS is almost exactly the same as for DFS except it uses
+        /// a first in, first out (FIFO) queue instead of a stack.
+        /// </summary>
+        /// <typeparam name="TNode"></typeparam>
+        /// <typeparam name="TEdge"></typeparam>
+        /// <param name="graph"></param>
+        /// <param name="source"></param>
+        /// <param name="target"></param>
+        /// <returns></returns>
+        public static SearchResult<TNode, TEdge> SearchBFS<TNode, TEdge>(this SparseGraph<TNode, TEdge> graph, int source, int target = -1)
+            where TNode : GraphNode
+            where TEdge : GraphEdge, new()
+        {
+            // reset search conditions
+            visited = new Visit[graph.NumNodes];
+            route = Enumerable.Repeat(-1, graph.NumNodes).ToArray();
+            SearchResult<TNode, TEdge> result = new SearchResult<TNode, TEdge> { Source = source, Target = target };
+            // Create a queue of edges
+            Queue<TEdge> queue = new Queue<TEdge>();
+            // create a dummy edge and put on the queue
+            TEdge dummy = new TEdge { From = source, To = source, Cost = 0 };
+            queue.Enqueue(dummy);
+            //mark the source node as visited
+            visited[source] = Visit.Visited;
+            // while there are edges in the stack keep searching
+            while (queue.Count > 0)
+            {
+                // grab the next edge
+                TEdge next = queue.Dequeue();
+                // make a note of the parent of the node this edge points to
+                route[next.To] = next.From;
+                // put it on the tree. (making sure the dummy edge is not placed on the tree)
+                if (next != dummy)
+                {
+                    result.SpanningTree.Add(next);
+                }
+                // if the target has been found the method can return success
+                if (next.To == target)
+                {
+                    result.Found = true;
+                    SetPathToTarget(result, source, target);
+                    return result;
+                }
+
+                // push the edges leading from the node this edge points to onto
+                // the queue (provided the edge does not point to a previously 
+                // visited node)
+                foreach (TEdge edge in graph.Edges(next.To))
+                {
+                    if (visited[edge.To] == Visit.Unvisited)
+                    {
+                        queue.Enqueue(edge);
+                        visited[edge.To] = Visit.Visited;
+                    }
+                }
+            }
+            // no path to target
+            return result;
+        }
     }
 
     class Program
     {
+        // Uninformed graph searches, or blind searches as they are sometimes
+        // known, search a graph without regard to any associated edge costs.They
+        // can distinguish individual nodes and edges however, enabling them to
+        // identify a target node or to recognize previously visited nodes or edges.
+        // This is the only information required to either completely explore a graph
+        // (to visit every node) or find a path between two nodes.
         static void Main(string[] args)
         {
+            // Given a source node, the depth first search can only guarantee that
+            // all the nodes and edges will be visited in a connected graph.
+            SparseGraph<GraphNode, GraphEdge> g = new SparseGraph<GraphNode, GraphEdge>(false);
+            g.AddNode(new GraphNode(0));
+            g.AddNode(new GraphNode(1));
+            g.AddNode(new GraphNode(2));
+            g.AddNode(new GraphNode(3));
+            g.AddNode(new GraphNode(4));
+            g.AddNode(new GraphNode(5));
 
+            g.AddEdge(new GraphEdge(0, 1));
+            g.AddEdge(new GraphEdge(0, 2));
+            g.AddEdge(new GraphEdge(1, 4));
+            g.AddEdge(new GraphEdge(2, 3));
+            g.AddEdge(new GraphEdge(3, 4));
+            g.AddEdge(new GraphEdge(4, 5));
+            g.AddEdge(new GraphEdge(3, 5));
+            //
+            var dfs = g.SearchDFS(4, 2);
+            dfs.Print();
+            var bfs = g.SearchBFS(4, 2);
+            bfs.Print();
         }
     }
 }
