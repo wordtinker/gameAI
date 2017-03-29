@@ -1,6 +1,105 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using UniformedGraphSearches;
+using Priority_Queue;
+using CostBasedGraphSearches;
+
+namespace CostBasedGraphSearches
+{
+    /// <summary>
+    /// Given a graph, source and optional target this class solves for
+    /// single source shortest paths (without a target being specified) or 
+    /// shortest path from source to target.
+    /// The algorithm used is a priority queue implementation of Dijkstra's.
+    /// </summary>
+    static class DijkstraSearch
+    {   
+        public static SearchResult<TNode, TEdge> SearchDijkstra<TNode, TEdge>(this SparseGraph<TNode, TEdge> graph, int source, int target = -1)
+            where TNode : GraphNode
+            where TEdge : GraphEdge, new()
+        {
+            SearchResult<TNode, TEdge> result = new SearchResult<TNode, TEdge> { Source = source, Target = target };
+            // this array contains the edges that comprise the shortest path tree -
+            // a directed subtree of the graph that encapsulates the best paths from 
+            // every node on the SPT to the source node.
+            TEdge[] shortestPathTree = new TEdge[graph.NumNodes];
+            // this is indexed into by node index and holds the total cost of the best
+            // path found so far to the given node. For example, m_CostToThisNode[5]
+            // will hold the total cost of all the edges that comprise the best path
+            // to node 5, found so far in the search (if node 5 is present and has 
+            // been visited)
+            float[] costToThisNode = new float[graph.NumNodes];
+            // this is an indexed (by node) vector of 'parent' edges leading to nodes 
+            // connected to the SPT but that have not been added to the SPT yet. This is
+            // a little like the stack or queue used in BST and DST searches.
+            TEdge[] searchFrontier = new TEdge[graph.NumNodes];
+            // create an indexed priority queue that sorts smallest to largest
+            // (front to back).Note that the maximum number of elements the iPQ
+            // may contain is N. This is because no node can be represented on the 
+            // queue more than once.
+            SimplePriorityQueue<int> pq = new SimplePriorityQueue<int>();
+            //put the source node on the queue
+            pq.Enqueue(source, 0);
+            //while the queue is not empty
+            while (pq.Count != 0)
+            {
+                // get lowest cost node from the queue. Don't forget, the return value
+                // is a *node index*, not the node itself. This node is the node not already
+                // on the SPT that is the closest to the source node
+                int nextClosestNodeindex = pq.Dequeue();
+                // move this edge from the frontier to the shortest path tree
+                shortestPathTree[nextClosestNodeindex] = searchFrontier[nextClosestNodeindex];
+                // if the target has been found exit
+                if (nextClosestNodeindex == target)
+                {
+                    result.Found = true;
+                    int node = target;
+                    result.PathToTarget.Add(node);
+                    while (node != source && shortestPathTree[node] != null)
+                    {
+                        node = shortestPathTree[node].From;
+                        result.PathToTarget.Insert(0, node);
+                    }
+                    return result;
+                }
+                // now to relax the edges.
+                // for each edge connected to the next closest node
+                foreach (TEdge edge in graph.Edges(nextClosestNodeindex))
+                {
+                    // the total cost to the node this edge points to is the cost to the
+                    // current node plus the cost of the edge connecting them.
+                    float newCost = costToThisNode[nextClosestNodeindex] + (float)edge.Cost;
+                    // if this edge has never been on the frontier make a note of the cost
+                    // to get to the node it points to, then add the edge to the frontier
+                    // and the destination node to the PQ.
+                    if (searchFrontier[edge.To] == null)
+                    {
+                        costToThisNode[edge.To] = newCost;
+                        pq.Enqueue(edge.To, newCost);
+                        searchFrontier[edge.To] = edge;
+                    }
+                    // else test to see if the cost to reach the destination node via the
+                    // current node is cheaper than the cheapest cost found so far. If
+                    // this path is cheaper, we assign the new cost to the destination
+                    // node, update its entry in the PQ to reflect the change and add the
+                    // edge to the frontier
+                    else if (newCost < costToThisNode[edge.To] &&
+                             shortestPathTree[edge.To] == null)
+                    {
+                        costToThisNode[edge.To] = newCost;
+                        //because the cost is less than it was previously, the PQ must be
+                        //re-sorted to account for this.
+                        pq.UpdatePriority(edge.To, newCost);
+                        searchFrontier[edge.To] = edge;
+                    }
+                }
+
+            }
+            return result;
+        }
+    }
+}
 
 namespace UniformedGraphSearches
 {
@@ -525,6 +624,8 @@ namespace UniformedGraphSearches
             dfs.Print();
             var bfs = g.SearchBFS(4, 2);
             bfs.Print();
+            var ds = g.SearchDijkstra(4, 2);
+            ds.Print();
         }
     }
 }
