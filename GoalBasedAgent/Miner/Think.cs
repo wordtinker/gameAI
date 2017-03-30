@@ -54,7 +54,7 @@ namespace GoalBasedAgent
         public override void Activate()
         {
             Console.BackgroundColor = ConsoleColor.Red;
-            Console.WriteLine("Ruminating about the life.");
+            Console.WriteLine($"{owner.Name}: Ruminating about the life.");
             Console.ResetColor();
             status = Status.Active;
             Arbitrate();
@@ -72,7 +72,7 @@ namespace GoalBasedAgent
             if (subgoalStatus == Status.Completed || subgoalStatus == Status.Failed)
             {
                 RemoveAllSubgoals();
-                Console.WriteLine("Brain is itchy.");
+                Console.WriteLine($"{owner.Name}: Brain is itchy.");
                 // every goal is complete, do some rest till next tick
                 status = Status.Inactive;
             }

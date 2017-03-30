@@ -23,16 +23,16 @@ namespace GoalBasedAgent
             Miner bob = new Miner()
             {
                 Name = "Bob", Location = LocationType.shack1, Home = LocationType.shack1,
-                Capacity = 6, ComfortLevel = 20,
-                TirednessThreshold = 6, ThirstLevel = 6
+                Capacity = 10, ComfortLevel = 20,
+                TirednessThreshold = 10, ThirstLevel = 12
             };
             Miner jim = new Miner()
             {
                 Name = "Jim", Location = LocationType.shack2, Home = LocationType.shack2,
                 Capacity = 4, ComfortLevel = 25,
-                TirednessThreshold = 9, ThirstLevel = 9
+                TirednessThreshold = 15, ThirstLevel = 15
             };
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 200; i++)
             {
                 bob.Update();
                 jim.Update();

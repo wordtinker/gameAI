@@ -10,7 +10,7 @@ namespace GoalBasedAgent
         public DepositGold(Miner owner) : base(owner) { }
         public override void Activate()
         {
-            Console.WriteLine("Counting nuggets.");
+            Console.WriteLine($"{owner.Name}: Counting nuggets.");
             status = Status.Active;
         }
         public override bool HandleMessage(Telegram message)
@@ -34,20 +34,20 @@ namespace GoalBasedAgent
                 //deposit the gold
                 owner.AddToWealth(owner.GoldCarried);
                 owner.GoldCarried = 0;
-                Console.WriteLine($"{owner}: Depositing gold. Total savings now: {owner.MoneyInBank}");
+                Console.WriteLine($"{owner.Name}: Depositing gold. Total savings now: {owner.MoneyInBank}");
                 status = Status.Completed;
                 return Status.Completed;
             }
             else
             {
-                Console.WriteLine($"Failed to deposit: {result}");
+                Console.WriteLine($"{owner.Name}: Failed to deposit: {result}");
                 status = Status.Failed;
                 return Status.Failed;
             }
         }
         public override void Terminate()
         {
-            Console.WriteLine("The purses are emptied.");
+            Console.WriteLine($"{owner.Name}: The purses are emptied.");
         }
     }
 
@@ -56,7 +56,7 @@ namespace GoalBasedAgent
         public GoToBank(Miner owner) : base(owner) { }
         public override void Activate()
         {
-            Console.WriteLine("Opted for going to bank.");
+            Console.WriteLine($"{owner.Name}: Opted for going to bank.");
             status = Status.Active;
         }
         public override bool HandleMessage(Telegram message)
@@ -77,21 +77,21 @@ namespace GoalBasedAgent
             int result = owner.StateMachine.Update();
             if (result >= taskComplexity)
             {
-                Console.WriteLine("Got to the bank.");
+                Console.WriteLine($"{owner.Name}: Got to the bank.");
                 owner.Location = LocationType.bank;
                 status = Status.Completed;
                 return Status.Completed;
             }
             else
             {
-                Console.WriteLine($"Trying to go to the bank: {result}");
+                Console.WriteLine($"{owner.Name}: Trying to go to the bank: {result}");
                 status = Status.Failed;
                 return Status.Failed;
             }
         }
         public override void Terminate()
         {
-            Console.WriteLine("The boots are soggy.");
+            Console.WriteLine($"{owner.Name}: The boots are soggy.");
         }
     }
 
@@ -100,7 +100,7 @@ namespace GoalBasedAgent
         public WorkInTheMine(Miner owner) : base(owner) { }
         public override void Activate()
         {
-            Console.WriteLine("Picking up the axe.");
+            Console.WriteLine($"{owner.Name}: Picking up the axe.");
             status = Status.Active;
         }
         public override bool HandleMessage(Telegram message)
@@ -122,7 +122,7 @@ namespace GoalBasedAgent
             if (result >= taskComplexity)
             {
                 owner.GoldCarried++;
-                Console.WriteLine($"Pickin' up a nugget");
+                Console.WriteLine($"{owner.Name}: Pickin' up a nugget");
                 if (owner.PocketsFull())
                 {
                     status = Status.Completed;
@@ -135,14 +135,14 @@ namespace GoalBasedAgent
             }
             else
             {
-                Console.WriteLine($"Failed to get gold: {result}");
+                Console.WriteLine($"{owner.Name}: Failed to get gold: {result}");
                 status = Status.Failed;
                 return Status.Failed;
             }
         }
         public override void Terminate()
         {
-            Console.WriteLine("The axes are broken.");
+            Console.WriteLine($"{owner.Name}: The axes are broken.");
         }
     }
 
@@ -151,7 +151,7 @@ namespace GoalBasedAgent
         public GoToMine(Miner owner) : base(owner) { }
         public override void Activate()
         {
-            Console.WriteLine("Opted for going to mine.");
+            Console.WriteLine($"{owner.Name}: Opted for going to mine.");
             status = Status.Active;
         }
         public override bool HandleMessage(Telegram message)
@@ -172,21 +172,21 @@ namespace GoalBasedAgent
             int result = owner.StateMachine.Update();
             if (result >= taskComplexity)
             {
-                Console.WriteLine("Got to the mine.");
+                Console.WriteLine($"{owner.Name}: Got to the mine.");
                 owner.Location = LocationType.goldmine;
                 status = Status.Completed;
                 return Status.Completed;
             }
             else
             {
-                Console.WriteLine($"Trying to go to the mine: {result}");
+                Console.WriteLine($"{owner.Name}: Trying to go to the mine: {result}");
                 status = Status.Failed;
                 return Status.Failed;
             }
         }
         public override void Terminate()
         {
-            Console.WriteLine("The boots are dusty.");
+            Console.WriteLine($"{owner.Name}: The boots are dusty.");
         }
     }
 
@@ -197,7 +197,7 @@ namespace GoalBasedAgent
         public WorkTheBlackSeam(Miner owner) : base(owner) { }
         public override void Activate()
         {
-            Console.WriteLine("Let's work the seam.");
+            Console.WriteLine($"{owner.Name}: Let's work the seam.");
             status = Status.Active;
             AddSubgoal(new DepositGold(owner));
             AddSubgoal(new GoToBank(owner)); // can fail
@@ -217,7 +217,9 @@ namespace GoalBasedAgent
                 attempts++;
                 if (attempts >= 10)
                 {
-                    Console.WriteLine("Something went wrong during mining.");
+                    Console.BackgroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine($"{owner.Name}: Something went wrong during mining.");
+                    Console.ResetColor();
                     status = Status.Failed;
                     RemoveAllSubgoals();
                     return Status.Failed;
@@ -238,7 +240,7 @@ namespace GoalBasedAgent
 
         public override void Terminate()
         {
-            Console.WriteLine("Abandon the seam.");
+            Console.WriteLine($"{owner.Name}: Abandon the seam.");
         }
     }
 }

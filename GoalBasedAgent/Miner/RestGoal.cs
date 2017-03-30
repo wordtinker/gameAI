@@ -9,7 +9,7 @@ namespace GoalBasedAgent
         public Sleep(Miner owner) : base(owner) { }
         public override void Activate()
         {
-            Console.WriteLine("Time to sleep!");
+            Console.WriteLine($"{owner.Name}: Time to sleep!");
             status = Status.Active;
         }
         public override bool HandleMessage(Telegram message)
@@ -25,28 +25,16 @@ namespace GoalBasedAgent
                 status = Status.Failed;
                 return Status.Failed;
             }
-
-            int taskComplexity = 0;
-            int result = owner.StateMachine.Update();
-            if (result >= taskComplexity)
-            {
-                // sleep
-                owner.DecreaseFatigue();
-                owner.StateMachine.Update();
-                Console.WriteLine($"{owner.Name}: ... ... ...");
-                status = Status.Completed;
-                return Status.Completed;
-            }
-            else
-            {
-                Console.WriteLine($"Failed to sleep: {result}");
-                status = Status.Failed;
-                return Status.Failed;
-            }
+            // sleep
+            owner.DecreaseFatigue();
+            owner.StateMachine.Update();
+            Console.WriteLine($"{owner.Name}: ... ... ...");
+            status = Status.Completed;
+            return Status.Completed;
         }
         public override void Terminate()
         {
-            Console.WriteLine("The slippers are sleepy.");
+            Console.WriteLine($"{owner.Name}: The slippers are sleepy.");
         }
     }
 
@@ -55,7 +43,7 @@ namespace GoalBasedAgent
         public EatDinner(Miner owner) : base(owner) { }
         public override void Activate()
         {
-            Console.WriteLine("Mmm dinner!");
+            Console.WriteLine($"{owner.Name}: Mmm dinner!");
             status = Status.Active;
         }
         public override bool HandleMessage(Telegram message)
@@ -71,28 +59,16 @@ namespace GoalBasedAgent
                 status = Status.Failed;
                 return Status.Failed;
             }
-
-            int taskComplexity = 0;
-            int result = owner.StateMachine.Update();
-            if (result >= taskComplexity)
-            {
-                // eat dinner
-                owner.DecreaseThirst();
-                owner.StateMachine.Update();
-                Console.WriteLine($"{owner.Name}: Munch munch munch.");
-                status = Status.Completed;
-                return Status.Completed;
-            }
-            else
-            {
-                Console.WriteLine($"Failed to eat: {result}");
-                status = Status.Failed;
-                return Status.Failed;
-            }
+            // eat dinner
+            owner.DecreaseThirst();
+            owner.StateMachine.Update();
+            Console.WriteLine($"{owner.Name}: Munch munch munch.");
+            status = Status.Completed;
+            return Status.Completed;
         }
         public override void Terminate()
         {
-            Console.WriteLine("The saucers are dirty.");
+            Console.WriteLine($"{owner.Name}: The saucers are dirty.");
         }
     }
 
@@ -101,7 +77,7 @@ namespace GoalBasedAgent
         public GoHome(Miner owner) : base(owner) { }
         public override void Activate()
         {
-            Console.WriteLine("Opted for going home.");
+            Console.WriteLine($"{owner.Name}: Opted for going home.");
             status = Status.Active;
         }
         public override bool HandleMessage(Telegram message)
@@ -122,14 +98,14 @@ namespace GoalBasedAgent
             int result = owner.StateMachine.Update();
             if (result >= taskComplexity)
             {
-                Console.WriteLine("Got to the shack.");
+                Console.WriteLine($"{owner.Name}: Got to the shack.");
                 owner.Location = owner.Home;
                 status = Status.Completed;
                 return Status.Completed;
             }
             else
             {
-                Console.WriteLine($"Trying to go home: {result}");
+                Console.WriteLine($"{owner.Name}: Trying to go home: {result}");
                 // Can't fail that task, try harder
                 status = Status.Active;
                 return Status.Active;
@@ -137,7 +113,7 @@ namespace GoalBasedAgent
         }
         public override void Terminate()
         {
-            Console.WriteLine("The steps are shaky.");
+            Console.WriteLine($"{owner.Name}: The steps are shaky.");
         }
     }
 
@@ -146,7 +122,7 @@ namespace GoalBasedAgent
         public Resting(Miner owner) : base(owner) { }
         public override void Activate()
         {
-            Console.WriteLine("Time to get some rest.");
+            Console.WriteLine($"{owner.Name}: Time to get some rest.");
             status = Status.Active;
             AddSubgoal(new Sleep(owner));
             AddSubgoal(new EatDinner(owner));
@@ -170,7 +146,7 @@ namespace GoalBasedAgent
         }
         public override void Terminate()
         {
-            Console.WriteLine("Abandon resting.");
+            Console.WriteLine($"{owner.Name}: Abandon resting.");
         }
     }
 }

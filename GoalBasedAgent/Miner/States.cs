@@ -14,7 +14,7 @@ namespace GoalBasedAgent
     {
         public void Enter(Miner entity)
         {
-            Console.WriteLine($"{entity}:  I'm tired, man");
+            Console.WriteLine($"{entity.Name}: I'm tired, man");
         }
 
         public int Execute(Miner entity)
@@ -23,7 +23,7 @@ namespace GoalBasedAgent
             entity.Thirst++;
             entity.Thirst++;
             entity.Fatigue++;
-            Console.WriteLine($"{entity}: in tired state");
+            Console.WriteLine($"{entity.Name}: in tired state");
             if (!entity.Fatigued() || !entity.Thirsty())
             {
                 entity.StateMachine.State = entity.StateMachine.Vigorous;
@@ -34,7 +34,7 @@ namespace GoalBasedAgent
 
         public void Exit(Miner entity)
         {
-            Console.WriteLine($"{entity}:  Not so tired again, man");
+            Console.WriteLine($"{entity.Name}: Not so tired again, man");
         }
 
         public bool OnMessage(Miner entity, Telegram message)
@@ -52,7 +52,7 @@ namespace GoalBasedAgent
     {
         public void Enter(Miner entity)
         {
-            Console.WriteLine($"{entity}:  It's all good, man");
+            Console.WriteLine($"{entity.Name}: It's all good, man");
         }
 
         public int Execute(Miner entity)
@@ -60,7 +60,7 @@ namespace GoalBasedAgent
             // every action makes miner thirsty and more exhausted
             entity.Thirst++;
             entity.Fatigue++;
-            Console.WriteLine($"{entity}: in vigorous state");
+            Console.WriteLine($"{entity.Name}: in vigorous state");
             if (entity.Fatigued() && entity.Thirsty())
             {
                 entity.StateMachine.State = entity.StateMachine.Tired;
@@ -70,7 +70,7 @@ namespace GoalBasedAgent
 
         public void Exit(Miner entity)
         {
-            Console.WriteLine($"{entity}:  It's all not so good, man");
+            Console.WriteLine($"{entity.Name}: It's all not so good, man");
         }
 
         public bool OnMessage(Miner entity, Telegram message)
