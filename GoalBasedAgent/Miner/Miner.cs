@@ -17,7 +17,7 @@ namespace GoalBasedAgent
         //how many nuggets the miner has in his pockets
         internal int GoldCarried { get; set; }
         //how much money the miner has deposited in the bank
-        internal int MoneyInBank { get; private set; }
+        internal int MoneyInBank { get; set; }
         //the higher the value, the more tired the miner
         internal int Fatigue { get; set; }
         //the higher the value, the thirstier the miner

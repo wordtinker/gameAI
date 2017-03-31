@@ -6,6 +6,26 @@ using System.Linq;
 
 namespace GoalBasedAgent
 {
+    class CelebrateGoalEvaluator : GoalEvaluator<Miner>
+    {
+        public CelebrateGoalEvaluator(Miner owner) : base(owner) { }
+        public override double Evaluate()
+        {
+            if (owner.StateMachine.State == owner.StateMachine.Vigorous)
+            {
+                return Math.Max(owner.MoneyInBank - owner.ComfortLevel, 0);
+            }
+            else
+            {
+                return 0;
+            }
+        }
+        public override Goal<Miner> GetGoal()
+        {
+            return new Celebrate(owner);
+        }
+    }
+
     class WorkTheBlackSeamGoalEvaluator : GoalEvaluator<Miner>
     {
         public WorkTheBlackSeamGoalEvaluator(Miner owner) : base(owner) { }
@@ -50,6 +70,7 @@ namespace GoalBasedAgent
             evaluators = new List<GoalEvaluator<Miner>>();
             evaluators.Add(new WorkTheBlackSeamGoalEvaluator(owner));
             evaluators.Add(new RestingGoalEvaluator(owner));
+            evaluators.Add(new CelebrateGoalEvaluator(owner));
         }
         public override void Activate()
         {

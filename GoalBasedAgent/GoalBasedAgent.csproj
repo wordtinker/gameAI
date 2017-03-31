@@ -48,6 +48,7 @@
     <Compile Include="Engine\Entities.cs" />
     <Compile Include="Engine\FSM.cs" />
     <Compile Include="Engine\RND.cs" />
+    <Compile Include="Miner\CelebrateGoal.cs" />
     <Compile Include="Miner\Miner.cs" />
     <Compile Include="Miner\RestGoal.cs" />
     <Compile Include="Miner\States.cs" />
