@@ -68,6 +68,7 @@ namespace Engine
             }
         }
 
+        // TODO messaging
         public abstract class AtomicGoal<T> : Goal<T>
         {
             public AtomicGoal(T owner) : base(owner){ }
@@ -77,6 +78,7 @@ namespace Engine
             }
         }
 
+        // TODO messaging
         public abstract class CompositeGoal<T> : Goal<T>
         {
             protected Stack<Goal<T>> subgoals = new Stack<Goal<T>>();

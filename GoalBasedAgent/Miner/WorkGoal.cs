@@ -123,6 +123,17 @@ namespace GoalBasedAgent
             {
                 owner.GoldCarried++;
                 Console.WriteLine($"{owner.Name}: Pickin' up a nugget");
+                if (result >= taskComplexity * 2)
+                {
+                    Console.WriteLine($"{owner.Name}: A big one!");
+                    MessageBroker.Instance.Dispatch(new Telegram
+                    {
+                        Delay = 0,
+                        Sender = owner,
+                        Receiver = owner.Rival,
+                        Message = (int)Messages.FoundAGreatOne
+                    });
+                }
                 if (owner.PocketsFull())
                 {
                     status = Status.Completed;

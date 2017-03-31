@@ -19,8 +19,8 @@
     /// </summary>
     enum Messages
     {
-        // TODO Messaging
         //HiHoneyImHome,
         //StewReady
+        FoundAGreatOne
     }
 }

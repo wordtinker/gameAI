@@ -1,6 +1,7 @@
 ﻿using Engine.FSM;
 using Engine.RND;
 using Engine.MessagingSystem;
+using World;
 using System;
 
 namespace GoalBasedAgent
@@ -9,29 +10,25 @@ namespace GoalBasedAgent
     /// Blip state.
     /// Revert to previous state after execution.
     /// </summary>
-    class DrinkFromMagicFlask : IState<Miner>
+    class DrinkFromMagicFlask : AState<Miner>
     {
-        public void Enter(Miner entity)
+        public override void Enter(Miner entity)
         {
             Console.WriteLine($"{entity.Name}: Time to have a sip!");
         }
-        public int Execute(Miner entity)
+        public override int Execute(Miner entity)
         {
             // that action does not cost thirst or fatigue
-            Console.BackgroundColor = ConsoleColor.Green;
+            Console.BackgroundColor = ConsoleColor.DarkGreen;
             Console.WriteLine($"{entity.Name}: ! ! !");
             Console.ResetColor();
             entity.StateMachine.RevertToPreviousState();
             // miner is ditracted
             return 0;
         }
-        public void Exit(Miner entity)
+        public override void Exit(Miner entity)
         {
             Console.WriteLine($"{entity.Name}: Ahhh!");
-        }
-        public bool OnMessage(Miner entity, Telegram message)
-        {
-            return false;
         }
     }
 
@@ -40,14 +37,13 @@ namespace GoalBasedAgent
     /// Success rate of an action is lowered to 70
     /// Transitions -> Vigorous
     /// </summary>
-    class Tired : IState<Miner>
+    class Tired : AState<Miner>
     {
-        public void Enter(Miner entity)
+        public override void Enter(Miner entity)
         {
             Console.WriteLine($"{entity.Name}: I'm tired, man");
         }
-
-        public int Execute(Miner entity)
+        public override int Execute(Miner entity)
         {
             // every action makes miner double thirsty and more exhausted
             entity.Thirst++;
@@ -61,16 +57,9 @@ namespace GoalBasedAgent
             // can do much less when tired
             return RND.Roll(70);
         }
-
-        public void Exit(Miner entity)
+        public override void Exit(Miner entity)
         {
             Console.WriteLine($"{entity.Name}: Not so tired again, man");
-        }
-
-        public bool OnMessage(Miner entity, Telegram message)
-        {
-            return false;
-            // TODO messaging
         }
     }
 
@@ -78,14 +67,13 @@ namespace GoalBasedAgent
     /// Basic state.
     /// Transitions -> Tired
     /// </summary>
-    class Vigorous : IState<Miner>
+    class Vigorous : AState<Miner>
     {
-        public void Enter(Miner entity)
+        public override void Enter(Miner entity)
         {
             Console.WriteLine($"{entity.Name}: It's all good, man");
         }
-
-        public int Execute(Miner entity)
+        public override int Execute(Miner entity)
         {
             // every action makes miner thirsty and more exhausted
             entity.Thirst++;
@@ -97,23 +85,16 @@ namespace GoalBasedAgent
             }
             return RND.Roll(100);
         }
-
-        public void Exit(Miner entity)
+        public override void Exit(Miner entity)
         {
             Console.WriteLine($"{entity.Name}: It's all not so good, man");
         }
-
-        public bool OnMessage(Miner entity, Telegram message)
-        {
-            return false;
-            // TODO messaging
-        }
     }
 
-    class GlobalMinerState : IState<Miner>
+    class GlobalMinerState : AState<Miner>
     {
-        public void Enter(Miner entity) { }
-        public int Execute(Miner entity)
+        public override void Enter(Miner entity) { }
+        public override int Execute(Miner entity)
         {
             // try to put miner into drinking state
             int result = RND.Roll(100);
@@ -123,9 +104,17 @@ namespace GoalBasedAgent
             }
             return 0;
         }
-        public void Exit(Miner entity){ }
-        public bool OnMessage(Miner entity, Telegram message)
+        public override void Exit(Miner entity){ }
+        public override bool OnMessage(Miner entity, Telegram message)
         {
+            // Make him angry
+            if (message.Message == (int)Messages.FoundAGreatOne)
+            {
+                Console.BackgroundColor = ConsoleColor.DarkRed;
+                Console.WriteLine($"{entity.Name}: Aaaargh!!!");
+                Console.ResetColor();
+                return true;
+            }
             return false;
         }
     }

@@ -32,6 +32,9 @@ namespace GoalBasedAgent
                 Capacity = 4, ComfortLevel = 25,
                 TirednessThreshold = 15, ThirstLevel = 15
             };
+            // connect them directly, simplistic solution
+            bob.Rival = jim;
+
             for (int i = 0; i < 200; i++)
             {
                 bob.Update();

@@ -15,6 +15,16 @@ namespace Engine
             // handler for messages from other entities
             bool OnMessage(T entity, Telegram message);
         }
+        abstract class AState<T> : IState<T>
+        {
+            public abstract void Enter(T entity);
+            public abstract int Execute(T entity);
+            public abstract void Exit(T entity);
+            public virtual bool OnMessage(T entity, Telegram message)
+            {
+                return false;
+            }
+        }
         /// Simple generic FSM with 2 inner states : current, global and memory of
         /// previous state.
         /// Current and global states are evaluated on each Update();

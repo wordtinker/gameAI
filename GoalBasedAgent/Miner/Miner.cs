@@ -14,6 +14,8 @@ namespace GoalBasedAgent
         internal LocationType Home { get; set; }
         // Miner's wife
         internal BaseGameEntity Wife { get; set; }
+        // rival miner
+        internal BaseGameEntity Rival { get; set; }
         //how many nuggets the miner has in his pockets
         internal int GoldCarried { get; set; }
         //how much money the miner has deposited in the bank
@@ -75,9 +77,10 @@ namespace GoalBasedAgent
         }
         public override bool HandleMessage(Telegram message)
         {
+            // 1. Try to handle message in the FSM
+            if (StateMachine.HandleMessage(message)) return true;
+            // 2. Handle message in the Brain
             return Brain.HandleMessage(message);
-            // TODO messaging
-            //return StateMachine.HandleMessage(message);
         }
     }
 }
