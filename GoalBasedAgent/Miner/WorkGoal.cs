@@ -13,10 +13,6 @@ namespace GoalBasedAgent
             Console.WriteLine($"{owner.Name}: Counting nuggets.");
             status = Status.Active;
         }
-        public override bool HandleMessage(Telegram message)
-        {
-            return false;
-        }
         public override Status Process()
         {
             ActivateIfInactive();
@@ -59,10 +55,6 @@ namespace GoalBasedAgent
             Console.WriteLine($"{owner.Name}: Opted for going to bank.");
             status = Status.Active;
         }
-        public override bool HandleMessage(Telegram message)
-        {
-            return false;
-        }
         public override Status Process()
         {
             ActivateIfInactive();
@@ -102,10 +94,6 @@ namespace GoalBasedAgent
         {
             Console.WriteLine($"{owner.Name}: Picking up the axe.");
             status = Status.Active;
-        }
-        public override bool HandleMessage(Telegram message)
-        {
-            return false;
         }
         public override Status Process()
         {
@@ -165,10 +153,6 @@ namespace GoalBasedAgent
             Console.WriteLine($"{owner.Name}: Opted for going to mine.");
             status = Status.Active;
         }
-        public override bool HandleMessage(Telegram message)
-        {
-            return false;
-        }
         public override Status Process()
         {
             ActivateIfInactive();
@@ -215,10 +199,6 @@ namespace GoalBasedAgent
             AddSubgoal(new WorkInTheMine(owner)); // can fail
             AddSubgoal(new GoToMine(owner)); // can fail
         }
-        public override bool HandleMessage(Telegram message)
-        {
-            return false;
-        }
         public override Status Process()
         {
             ActivateIfInactive();
@@ -244,6 +224,7 @@ namespace GoalBasedAgent
             }
             else if (result == Status.Completed)
             {
+                status = Status.Completed;
                 RemoveAllSubgoals();
             }
             return result;
@@ -252,6 +233,28 @@ namespace GoalBasedAgent
         public override void Terminate()
         {
             Console.WriteLine($"{owner.Name}: Abandon the seam.");
+        }
+        /// <summary>
+        /// Responds to invasion by hiding in the mine
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        public override bool HandleMessage(Telegram message)
+        {
+            // ask subgoals
+            if (base.HandleMessage(message)) return true;
+            // try to respond locally
+            if (message.Message == (int)Messages.Invasion &&
+                owner.Location == LocationType.goldmine)
+            {
+                // hide in the mine
+                AddSubgoal(new Hide(owner));
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
     }
 }

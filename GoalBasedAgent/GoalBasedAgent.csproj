@@ -50,6 +50,7 @@
     <Compile Include="Engine\RND.cs" />
     <Compile Include="Miner\CelebrateGoal.cs" />
     <Compile Include="Miner\Miner.cs" />
+    <Compile Include="Miner\ReactiveGoals.cs" />
     <Compile Include="Miner\RestGoal.cs" />
     <Compile Include="Miner\States.cs" />
     <Compile Include="Miner\Think.cs" />

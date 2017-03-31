@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Engine.MessagingSystem;
+using Engine.RND;
+using System;
 using System.Threading;
 using World;
 
@@ -37,8 +39,30 @@ namespace GoalBasedAgent
 
             for (int i = 0; i < 200; i++)
             {
+                // provoke monster invasion
+                if (RND.Roll(100) >= 80)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("Invasion is coming.");
+                    Console.ResetColor();
+                    MessageBroker.Instance.Dispatch(new Telegram
+                    {
+                        Delay = 0,
+                        Message = (int)Messages.Invasion,
+                        Receiver = bob,
+                        Sender = null
+                    });
+                    MessageBroker.Instance.Dispatch(new Telegram
+                    {
+                        Delay = 0,
+                        Message = (int)Messages.Invasion,
+                        Receiver = jim,
+                        Sender = null
+                    });
+                }
                 bob.Update();
                 jim.Update();
+                MessageBroker.Instance.DispatchDelayedMessages();
                 Thread.Sleep(100);
                 Console.WriteLine();
             }

@@ -12,10 +12,6 @@ namespace GoalBasedAgent
             Console.WriteLine($"{owner.Name}: Time to sleep!");
             status = Status.Active;
         }
-        public override bool HandleMessage(Telegram message)
-        {
-            return false;
-        }
         public override Status Process()
         {
             ActivateIfInactive();
@@ -46,10 +42,6 @@ namespace GoalBasedAgent
             Console.WriteLine($"{owner.Name}: Mmm dinner!");
             status = Status.Active;
         }
-        public override bool HandleMessage(Telegram message)
-        {
-            return false;
-        }
         public override Status Process()
         {
             ActivateIfInactive();
@@ -79,10 +71,6 @@ namespace GoalBasedAgent
         {
             Console.WriteLine($"{owner.Name}: Opted for going home.");
             status = Status.Active;
-        }
-        public override bool HandleMessage(Telegram message)
-        {
-            return false;
         }
         public override Status Process()
         {
@@ -128,10 +116,6 @@ namespace GoalBasedAgent
             AddSubgoal(new EatDinner(owner));
             AddSubgoal(new GoHome(owner));
         }
-        public override bool HandleMessage(Telegram message)
-        {
-            return false;
-        }
         public override Status Process()
         {
             ActivateIfInactive();
@@ -140,6 +124,7 @@ namespace GoalBasedAgent
             // not catching Failed, all subgoals are infailable
             if (result == Status.Completed)
             {
+                status = Status.Completed;
                 RemoveAllSubgoals();
             }
             return result;

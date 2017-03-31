@@ -68,7 +68,6 @@ namespace Engine
             }
         }
 
-        // TODO messaging
         public abstract class AtomicGoal<T> : Goal<T>
         {
             public AtomicGoal(T owner) : base(owner){ }
@@ -76,9 +75,12 @@ namespace Engine
             {
                 throw new NotImplementedException();
             }
+            public override bool HandleMessage(Telegram message)
+            {
+                return false;
+            }
         }
 
-        // TODO messaging
         public abstract class CompositeGoal<T> : Goal<T>
         {
             protected Stack<Goal<T>> subgoals = new Stack<Goal<T>>();
@@ -125,6 +127,18 @@ namespace Engine
                     g.Terminate();
                 }
                 subgoals.Clear();
+            }
+            /// <summary>
+            /// Tries to handle message by the first subgoal
+            /// </summary>
+            /// <param name="message"></param>
+            /// <returns></returns>
+            public override bool HandleMessage(Telegram message)
+            {
+                // no subgoals, can't handle
+                if (subgoals.Count == 0) return false;
+                // handle in the first subgoal
+                return subgoals.Peek().HandleMessage(message);
             }
         }
     }

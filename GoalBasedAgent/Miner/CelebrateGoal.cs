@@ -13,10 +13,6 @@ namespace GoalBasedAgent
             Console.WriteLine($"{owner.Name}: Let's ride!");
             status = Status.Active;
         }
-        public override bool HandleMessage(Telegram message)
-        {
-            return false;
-        }
         public override Status Process()
         {
             int saloonWage = 4;
@@ -47,10 +43,6 @@ namespace GoalBasedAgent
         {
             Console.WriteLine($"{owner.Name}: Opted for going to saloon.");
             status = Status.Active;
-        }
-        public override bool HandleMessage(Telegram message)
-        {
-            return false;
         }
         public override Status Process()
         {
@@ -94,10 +86,6 @@ namespace GoalBasedAgent
             AddSubgoal(new Gamble(owner));
             AddSubgoal(new GoToSaloon(owner));
         }
-        public override bool HandleMessage(Telegram message)
-        {
-            return false;
-        }
         public override Status Process()
         {
             ActivateIfInactive();
@@ -112,6 +100,7 @@ namespace GoalBasedAgent
             }
             else if (result == Status.Completed)
             {
+                status = Status.Completed;
                 RemoveAllSubgoals();
             }
             return result;

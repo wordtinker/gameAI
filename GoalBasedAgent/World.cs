@@ -19,8 +19,7 @@
     /// </summary>
     enum Messages
     {
-        //HiHoneyImHome,
-        //StewReady
+        Invasion,
         FoundAGreatOne
     }
 }

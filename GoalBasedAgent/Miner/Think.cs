@@ -3,6 +3,7 @@ using Engine.MessagingSystem;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using World;
 
 namespace GoalBasedAgent
 {
@@ -80,16 +81,11 @@ namespace GoalBasedAgent
             status = Status.Active;
             Arbitrate();
         }
-        public override bool HandleMessage(Telegram message)
-        {
-            // TODO messaging
-            return false;
-        }
         public override Status Process()
         {
             ActivateIfInactive();
             Status subgoalStatus = ProcessSubgoals();
-
+            // if finished last goal
             if (subgoalStatus == Status.Completed || subgoalStatus == Status.Failed)
             {
                 RemoveAllSubgoals();
@@ -112,10 +108,35 @@ namespace GoalBasedAgent
         /// </summary>
         private void Arbitrate()
         {
-            var chosen = evaluators.OrderByDescending(e => e.Evaluate()).FirstOrDefault();
-            if (chosen != null)
+            // Choose next goal only if no goal is present
+            if (subgoals.Count == 0)
             {
-                AddSubgoal(chosen.GetGoal());
+                var chosen = evaluators.OrderByDescending(e => e.Evaluate()).FirstOrDefault();
+                if (chosen != null)
+                {
+                    AddSubgoal(chosen.GetGoal());
+                }
+            }
+        }
+        /// <summary>
+        /// Respond to invasion by starting fight
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        public override bool HandleMessage(Telegram message)
+        {
+            // ask subgoals
+            if (base.HandleMessage(message)) return true;
+            // respond locally
+            if (message.Message == (int)Messages.Invasion)
+            {
+                // start fighting
+                AddSubgoal(new Fight(owner));
+                return true;
+            }
+            else
+            {
+                return false;
             }
         }
     }
