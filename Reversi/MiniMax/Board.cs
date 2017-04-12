@@ -157,17 +157,25 @@ namespace MiniMax
             return CurrentPlayer.Passed && Opponent.Passed;
         }
 
-        public int GetScore(IPlayer player)
+        public Tuple<int, int> GetScore(IPlayer player)
         {
             int score = 0;
+            int oppScore = 0;
             for (int i = 0; i < board.Length; i++)
             {
                 for (int j = 0; j < board[i].Length; j++)
                 {
-                    if (board[i][j] == player.Symbol) score++;
+                    if (board[i][j] == player.Symbol)
+                    {
+                        score++;
+                    }
+                    else if (char.IsLetter(board[i][j]))
+                    {
+                        oppScore++;
+                    }
                 }
             }
-            return score;
+            return Tuple.Create(score, oppScore);
         }
         private void RenderTopLine()
         {
@@ -203,8 +211,9 @@ namespace MiniMax
         }
         public void ShowScore()
         {
-            Console.WriteLine($"{CurrentPlayer.Symbol}'s score: {GetScore(CurrentPlayer)}");
-            Console.WriteLine($"{Opponent.Symbol}'s score: {GetScore(Opponent)}");
+            Tuple<int, int> scores = GetScore(CurrentPlayer);
+            Console.WriteLine($"{CurrentPlayer.Symbol}'s score: {scores.Item1}");
+            Console.WriteLine($"{Opponent.Symbol}'s score: {scores.Item2}");
         }
 
         public object Clone()

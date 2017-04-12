@@ -1,4 +1,6 @@
 ﻿
+using System;
+
 namespace MiniMax
 {
     public static class Brain
@@ -6,7 +8,7 @@ namespace MiniMax
         public static Move GetBestMove(this Board board)
         {
             // Get the result of a minimax run and return the move
-            int thinkAsDeepAs = 7;
+            int thinkAsDeepAs = 5;
             Move move;
             board.MiniMax(board.CurrentPlayer, out move, maxDepth:thinkAsDeepAs);
             return move;
@@ -27,7 +29,7 @@ namespace MiniMax
             if (board.IsGameOver() || currentDepth == maxDepth)
             {
                 move = Move.Pass;
-                return board.Evaluate();
+                return board.Evaluate(player);
             }
             // Otherwise bubble up values from below
             Move bestMove = Move.Pass;
@@ -76,14 +78,16 @@ namespace MiniMax
 
         /// <summary>
         /// Calculates the score for the current board position for the
-        /// current player. player chips score +1, opponent chips score -1
+        /// player that is CALLING minimax regardless of the current player
+        /// that lies on the bottom tier of the tree.
+        /// Player chips score +1, opponent chips score -1
         /// </summary>
         /// <param name="board"></param>
         /// <returns></returns>
-        public static int Evaluate(this Board board)
+        public static int Evaluate(this Board board, IPlayer player)
         {
-            // TODO later. not effective, have to rewrite GetScore to prevent double calling
-            return board.GetScore(board.CurrentPlayer) - board.GetScore(board.Opponent);
+            Tuple<int, int> scores = board.GetScore(player);
+            return scores.Item1 - scores.Item2;
         }
     }
 }
