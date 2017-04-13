@@ -22,7 +22,10 @@ namespace MiniMax
     {
         public override Board Play()
         {
-            Move result = Board.GetBestMove();
+            // NB  
+            //Move result = Board.GetBestMoveMiniMax();
+            //Move result = Board.GetBestMoveNegaMax();
+            Move result = Board.GetBestMoveABMiniMax();
             Board state;
             if (Board.MakeMove(result, out state))
             {
