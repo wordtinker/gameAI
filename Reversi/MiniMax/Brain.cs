@@ -23,7 +23,7 @@ namespace MiniMax
         }
         public static Move GetBestMoveABMiniMax(this Board board)
         {
-            int thinkAsDeepAs = 8;
+            int thinkAsDeepAs = 7;
             Move move;
             board.ABMiniMax(board.CurrentPlayer, out move, maxDepth: thinkAsDeepAs);
             return move;
@@ -89,7 +89,17 @@ namespace MiniMax
             move = bestMove;
             return bestScore;
         }
-        // TODO desc
+        /// <summary>
+        /// Minimax with AB pruning.
+        /// </summary>
+        /// <param name="board"></param>
+        /// <param name="player"></param>
+        /// <param name="move"></param>
+        /// <param name="maxDepth"></param>
+        /// <param name="currentDepth"></param>
+        /// <param name="alpha"></param>
+        /// <param name="beta"></param>
+        /// <returns></returns>
         public static int ABMiniMax(this Board board, IPlayer player, out Move move,
                                     int maxDepth = 5, int currentDepth = 0,
                                     int alpha = int.MinValue, int beta = int.MaxValue)

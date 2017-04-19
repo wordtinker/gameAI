@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace MiniMax
 {
@@ -18,11 +19,31 @@ namespace MiniMax
         public abstract Board Play();
     }
 
+    class RandomAI : APlayer
+    {
+        static Random rnd = new Random();
+        public override Board Play()
+        {
+            List<Move> moves = Board.GetMoves();
+            int r = rnd.Next(moves.Count);
+            Move selectedMove = moves[r];
+            Board state;
+            if (Board.MakeMove(selectedMove, out state))
+            {
+                return state;
+            }
+            else
+            {
+                throw new Exception("Brain is scorched. Something went wrong in random AI.");
+            }
+        }
+    }
+
     class Comp : APlayer
     {
         public override Board Play()
         {
-            // NB  
+            // TODO NB  
             //Move result = Board.GetBestMoveMiniMax();
             //Move result = Board.GetBestMoveNegaMax();
             Move result = Board.GetBestMoveABMiniMax();
@@ -65,6 +86,9 @@ namespace MiniMax
         }
     }
 
+    /// <summary>
+    /// Table for 2p play with rendering or eahc turn.
+    /// </summary>
     class GameTable
     {
         static IPlayer ChoosePlayer()
@@ -114,11 +138,68 @@ namespace MiniMax
         }
     }
 
+    /// <summary>
+    /// Table that makes n consequtive autotests for given AI player against
+    /// random AI player.
+    /// </summary>
+    class AutoTestingTable
+    {
+        private Board board;
+        private IPlayer randomAIPlayer;
+        private IPlayer playerTwo;
+        public AutoTestingTable()
+        {
+            randomAIPlayer = new RandomAI();
+        }
+        private Tuple<int, int> DoTest()
+        {
+            // TODO NB creation of concrete class here
+            // TODO random ai is always first player
+            playerTwo = new Comp();
+            board = new Board(randomAIPlayer, playerTwo);
+            randomAIPlayer.Board = board;
+            playerTwo.Board = board;
+            while (!board.IsGameOver())
+            {
+                board = board.CurrentPlayer.Play();
+                randomAIPlayer.Board = board;
+                playerTwo.Board = board;
+            }
+            // show final score
+            return board.GetScore(randomAIPlayer);
+        }
+        public void Run()
+        {
+            int randomWin = 0;
+            int tie = 0;
+            int randomLose = 0;
+            for (int i = 0; i < 100; i++)
+            {
+                Console.WriteLine(i);
+                Tuple<int, int> result =  DoTest();
+                if (result.Item1 > result.Item2)
+                {
+                    randomWin++;
+                }
+                else if (result.Item1 < result.Item2)
+                {
+                    randomLose++;
+                }
+                else
+                {
+                    tie++;
+                }
+            }
+            Console.WriteLine($"Random: {randomWin} Tie: {tie} AI: {randomLose}");
+        }
+    }
+
     class Program
     {
         static void Main(string[] args)
         {
-            GameTable table = new GameTable();
+            //GameTable table = new GameTable();
+            AutoTestingTable table = new AutoTestingTable();
             table.Run();
         }
     }
