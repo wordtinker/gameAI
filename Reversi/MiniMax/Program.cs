@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace MiniMax
 {
@@ -19,34 +18,13 @@ namespace MiniMax
         public abstract Board Play();
     }
 
-    class RandomAI : APlayer
-    {
-        static Random rnd = new Random();
-        public override Board Play()
-        {
-            List<Move> moves = Board.GetMoves();
-            int r = rnd.Next(moves.Count);
-            Move selectedMove = moves[r];
-            Board state;
-            if (Board.MakeMove(selectedMove, out state))
-            {
-                return state;
-            }
-            else
-            {
-                throw new Exception("Brain is scorched. Something went wrong in random AI.");
-            }
-        }
-    }
-
     class Comp : APlayer
     {
+        private Func<Board, Move> moveSelector;
+
         public override Board Play()
         {
-            // TODO NB  
-            //Move result = Board.GetBestMoveMiniMax();
-            //Move result = Board.GetBestMoveNegaMax();
-            Move result = Board.GetBestMoveABMiniMax();
+            Move result = moveSelector.Invoke(Board);
             Board state;
             if (Board.MakeMove(result, out state))
             {
@@ -56,6 +34,10 @@ namespace MiniMax
             {
                 throw new Exception("Brain is scorched. Something went wrong in the AI.");
             }
+        }
+        public Comp(Func<Board, Move> moveSelector)
+        {
+            this.moveSelector = moveSelector;
         }
     }
 
@@ -87,38 +69,17 @@ namespace MiniMax
     }
 
     /// <summary>
-    /// Table for 2p play with rendering or eahc turn.
+    /// Table for 2p play with rendering or each turn.
     /// </summary>
     class GameTable
     {
-        static IPlayer ChoosePlayer()
-        {
-            do
-            {
-                Console.WriteLine("Select a player: [H]uman or [C]omputer:");
-                string result = Console.ReadLine();
-                if (result == "H")
-                {
-                    return new Player();
-                }
-                else if (result == "C")
-                {
-                    return new Comp();
-                }
-                else
-                {
-                    Console.WriteLine("Something went wrong");
-                }
-            } while (true);
-        }
-
         private Board board;
         private IPlayer playerOne;
         private IPlayer playerTwo;
-        public GameTable()
+        public GameTable(IPlayer playerOne, IPlayer playerTwo)
         {
-            playerOne = ChoosePlayer();
-            playerTwo = ChoosePlayer();
+            this.playerOne = playerOne;
+            this.playerTwo = playerTwo;
             board = new Board(playerOne, playerTwo);
             playerOne.Board = board;
             playerTwo.Board = board;
@@ -144,63 +105,128 @@ namespace MiniMax
     /// </summary>
     class AutoTestingTable
     {
-        private Board board;
-        private IPlayer randomAIPlayer;
+        private IPlayer playerOne;
         private IPlayer playerTwo;
-        public AutoTestingTable()
+        public AutoTestingTable(IPlayer playerOne, IPlayer playerTwo)
         {
-            randomAIPlayer = new RandomAI();
+            this.playerOne = playerOne;
+            this.playerTwo = playerTwo;
         }
         private Tuple<int, int> DoTest()
         {
-            // TODO NB creation of concrete class here
-            // TODO random ai is always first player
-            playerTwo = new Comp();
-            board = new Board(randomAIPlayer, playerTwo);
-            randomAIPlayer.Board = board;
+            Board board = new Board(playerOne, playerTwo);
+            playerOne.Board = board;
+            playerOne.Passed = false;
             playerTwo.Board = board;
+            playerTwo.Passed = false;
             while (!board.IsGameOver())
             {
                 board = board.CurrentPlayer.Play();
-                randomAIPlayer.Board = board;
+                playerOne.Board = board;
                 playerTwo.Board = board;
             }
             // show final score
-            return board.GetScore(randomAIPlayer);
+            return board.GetScore(playerOne);
         }
         public void Run()
         {
-            int randomWin = 0;
+            int p1Win = 0;
             int tie = 0;
-            int randomLose = 0;
+            int p1Lose = 0;
             for (int i = 0; i < 100; i++)
             {
                 Console.WriteLine(i);
                 Tuple<int, int> result =  DoTest();
                 if (result.Item1 > result.Item2)
                 {
-                    randomWin++;
+                    p1Win++;
                 }
                 else if (result.Item1 < result.Item2)
                 {
-                    randomLose++;
+                    p1Lose++;
                 }
                 else
                 {
                     tie++;
                 }
             }
-            Console.WriteLine($"Random: {randomWin} Tie: {tie} AI: {randomLose}");
+            Console.WriteLine($"Player 1: {p1Win} Tie: {tie} Player 2: {p1Lose}");
         }
     }
 
     class Program
     {
+        static IPlayer ChooseCType()
+        {
+            do
+            {
+                Console.WriteLine("Select type:");
+                Console.WriteLine("R - Random");
+                Console.WriteLine("M - Minimax");
+                Console.WriteLine("NM - Negamax");
+                Console.WriteLine("AB - AB pruning");
+                string result = Console.ReadLine();
+                switch (result)
+                {
+                    case "R":
+                        return new Comp(Brain.GetRandomMove);
+                    case "M":
+                        return new Comp(Brain.GetBestMoveMiniMax);
+                    case "NM":
+                        return new Comp(Brain.GetBestMoveNegaMax);
+                    case "AB":
+                        return new Comp(Brain.GetBestMoveABMiniMax);
+                    default:
+                        Console.WriteLine("Something went wrong");
+                        break;
+                }
+            } while (true);
+        }
+
+        static IPlayer ChoosePlayer()
+        {
+            do
+            {
+                Console.WriteLine("Select a player: [H]uman or [C]omputer:");
+                string result = Console.ReadLine();
+                if (result == "H")
+                {
+                    return new Player();
+                }
+                else if (result == "C")
+                {
+                    return ChooseCType();
+                }
+                else
+                {
+                    Console.WriteLine("Something went wrong");
+                }
+            } while (true);
+        }
         static void Main(string[] args)
         {
-            //GameTable table = new GameTable();
-            AutoTestingTable table = new AutoTestingTable();
-            table.Run();
+            IPlayer playerOne;
+            IPlayer playerTwo;
+            Console.WriteLine("1 - Single game.");
+            Console.WriteLine("2 - Multiple games");
+            string decision = Console.ReadLine();
+            switch (decision)
+            {
+                case "1":
+                    playerOne = ChoosePlayer();
+                    playerTwo = ChoosePlayer();
+                    GameTable table = new GameTable(playerOne, playerTwo);
+                    table.Run();
+                    break;
+                case "2":
+                    playerOne = ChooseCType();
+                    playerTwo = ChooseCType();
+                    AutoTestingTable auto = new AutoTestingTable(playerOne, playerTwo);
+                    auto.Run();
+                    break;
+                default:
+                    break;
+            }
         }
     }
 }

@@ -1,10 +1,19 @@
 ﻿
 using System;
+using System.Collections.Generic;
 
 namespace MiniMax
 {
     public static class Brain
     {
+        private static Random rnd = new Random();
+        public static Move GetRandomMove(this Board board)
+        {
+            List<Move> moves = board.GetMoves();
+            int r = rnd.Next(moves.Count);
+            return moves[r];
+        }
+
         public static Move GetBestMoveMiniMax(this Board board)
         {
             // Get the result of a minimax run and return the move
