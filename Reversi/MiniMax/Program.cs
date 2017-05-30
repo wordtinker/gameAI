@@ -133,7 +133,7 @@ namespace MiniMax
             int p1Win = 0;
             int tie = 0;
             int p1Lose = 0;
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 10; i++)
             {
                 Console.WriteLine(i);
                 Tuple<int, int> result =  DoTest();
@@ -165,6 +165,7 @@ namespace MiniMax
                 Console.WriteLine("M - Minimax");
                 Console.WriteLine("NM - Negamax");
                 Console.WriteLine("AB - AB pruning");
+                Console.WriteLine("MC - Monte Carlo Tree Search");
                 string result = Console.ReadLine();
                 switch (result)
                 {
@@ -176,6 +177,8 @@ namespace MiniMax
                         return new Comp(Brain.GetBestMoveNegaMax);
                     case "AB":
                         return new Comp(Brain.GetBestMoveABMiniMax);
+                    case "MC":
+                        return new Comp(Brain.GetBestMoveMCTS);
                     default:
                         Console.WriteLine("Something went wrong");
                         break;

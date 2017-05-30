@@ -17,7 +17,7 @@ namespace MiniMax
         public static Move GetBestMoveMiniMax(this Board board)
         {
             // Get the result of a minimax run and return the move
-            int thinkAsDeepAs = 5;
+            int thinkAsDeepAs = 4;
             Move move;
             board.MiniMax(board.CurrentPlayer, out move, maxDepth:thinkAsDeepAs);
             return move;
@@ -25,17 +25,31 @@ namespace MiniMax
         public static Move GetBestMoveNegaMax(this Board board)
         {
             // Get the result of a negamax run and return the move
-            int thinkAsDeepAs = 6;
+            int thinkAsDeepAs = 4;
             Move move;
             board.NegaMax(out move, maxDepth: thinkAsDeepAs);
             return move;
         }
         public static Move GetBestMoveABMiniMax(this Board board)
         {
-            int thinkAsDeepAs = 7;
+            int thinkAsDeepAs = 6;
             Move move;
             board.ABMiniMax(board.CurrentPlayer, out move, maxDepth: thinkAsDeepAs);
             return move;
+        }
+        public static Move GetBestMoveMCTS(this Board board)
+        {
+            int numOfEpisodes = 10000;
+            IPolicy p = new UCBPolicy();
+            MCTS mcts = new MCTS(board, p, new RandomPolicy());
+            mcts.UpdatePolicy(numOfEpisodes);
+            // NB Test dump
+            //foreach (var item in p.A(board))
+            //{
+            //    Console.WriteLine($"{item.Key} -> In policy: {item.Value.InPolicy} Won: {item.Value.W} of {item.Value.N}. Value: {item.Value.Value}");
+            //}
+            //Console.ReadLine();
+            return p.GetMove(board);
         }
 
         /// <summary>
