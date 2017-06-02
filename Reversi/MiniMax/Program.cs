@@ -133,7 +133,7 @@ namespace MiniMax
             int p1Win = 0;
             int tie = 0;
             int p1Lose = 0;
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 100; i++)
             {
                 Console.WriteLine(i);
                 Tuple<int, int> result =  DoTest();
@@ -154,6 +154,60 @@ namespace MiniMax
         }
     }
 
+    class TrainingTable
+    {
+        private NeuralBrain network;
+        private IPlayer playerOne;
+        private IPlayer playerTwo;
+        public TrainingTable(IPlayer playerOne, IPlayer playerTwo, NeuralBrain network)
+        {
+            this.playerOne = playerOne;
+            this.playerTwo = playerTwo;
+            this.network = network;
+        }
+        public  void Run()
+        {
+            for (int i = 0; i < 1000; i++)
+            {
+                Console.WriteLine(i);
+                Board board = new Board(playerOne, playerTwo);
+                playerOne.Board = board;
+                playerOne.Passed = false;
+                playerTwo.Board = board;
+                playerTwo.Passed = false;
+
+                while (!board.IsGameOver())
+                {
+                    // remember the state
+                    Board currentState = board; 
+                    // make a transition to new state
+                    board = board.CurrentPlayer.Play();
+                    playerOne.Board = board;
+                    playerTwo.Board = board;
+                    // Train network, backpropagation value of new state to old
+                    network.Train(currentState, network.EvaluateState(board));
+                }
+                // train the final state from the real result of the game
+                Tuple<int, int> result = board.GetScore(playerOne);
+                if (result.Item1 > result.Item2)
+                {
+                    // first player won, use 1.
+                    network.Train(board, 1.00);
+                }
+                else if (result.Item1 < result.Item2)
+                {
+                    // second player won, use 0;
+                    network.Train(board, 0.00);
+                }
+                else
+                {
+                    // draw
+                    network.Train(board, 0.5);
+                }
+            }
+        }
+    }
+
     class Program
     {
         static IPlayer ChooseCType()
@@ -166,6 +220,7 @@ namespace MiniMax
                 Console.WriteLine("NM - Negamax");
                 Console.WriteLine("AB - AB pruning");
                 Console.WriteLine("MC - Monte Carlo Tree Search");
+                Console.WriteLine("NN - Neural network");
                 string result = Console.ReadLine();
                 switch (result)
                 {
@@ -179,6 +234,9 @@ namespace MiniMax
                         return new Comp(Brain.GetBestMoveABMiniMax);
                     case "MC":
                         return new Comp(Brain.GetBestMoveMCTS);
+                    case "NN":
+                        NeuralBrain brain = ChooseNetwork();
+                        return new Comp(brain.GetBestMove);
                     default:
                         Console.WriteLine("Something went wrong");
                         break;
@@ -206,12 +264,43 @@ namespace MiniMax
                 }
             } while (true);
         }
+        static NeuralBrain ChooseNetwork()
+        {
+            do
+            {
+                Console.WriteLine("1 - Create New");
+                Console.WriteLine("2 - Load");
+                string result = Console.ReadLine();
+                if (result == "1")
+                {
+                    Console.WriteLine("Name the network: ...)");
+                    string name = Console.ReadLine();
+                    return IO.CreateANN(name);
+                }
+                else if(result == "2")
+                {
+                    Console.WriteLine("Existing networks:");
+                    foreach (string n in IO.ListNetworks())
+                    {
+                        Console.WriteLine(n);
+                    }
+                    Console.WriteLine("Name the network: ...)");
+                    string name = Console.ReadLine();
+                    return IO.LoadANN(name);
+                }
+                else
+                {
+                    Console.WriteLine("Something went wrong");
+                }
+            } while (true);
+        }
         static void Main(string[] args)
         {
             IPlayer playerOne;
             IPlayer playerTwo;
             Console.WriteLine("1 - Single game.");
             Console.WriteLine("2 - Multiple games");
+            Console.WriteLine("3 - Train ANN");
             string decision = Console.ReadLine();
             switch (decision)
             {
@@ -226,6 +315,15 @@ namespace MiniMax
                     playerTwo = ChooseCType();
                     AutoTestingTable auto = new AutoTestingTable(playerOne, playerTwo);
                     auto.Run();
+                    break;
+                case "3":
+                    NeuralBrain brain = ChooseNetwork();
+                    // use same brain for training
+                    playerOne = new Comp(brain.GetBestMove);
+                    playerTwo = new Comp(brain.GetBestMove);
+                    TrainingTable train = new TrainingTable(playerOne, playerTwo, brain);
+                    train.Run();
+                    IO.SaveANN(brain);
                     break;
                 default:
                     break;

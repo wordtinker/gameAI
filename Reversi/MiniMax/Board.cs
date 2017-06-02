@@ -18,7 +18,10 @@ namespace MiniMax
 
     public class Board : ICloneable
     {
-        private char[][] board;
+        internal char[][] board; // internal for adapter
+        public char FirstPlayerSymbol = 'x';
+        public char SecondPlayerSymbol = 'o';
+
         public IPlayer Opponent { get; private set; }
         public IPlayer CurrentPlayer { get; private set; }
         private Move ToMove(int i, int j)
@@ -240,8 +243,8 @@ namespace MiniMax
             {
                 board[i] = new char[8];
             }
-            p1.Symbol = 'x';
-            p2.Symbol = 'o';
+            p1.Symbol = FirstPlayerSymbol;
+            p2.Symbol = SecondPlayerSymbol;
             board[3][3] = p1.Symbol;
             board[4][3] = p2.Symbol;
             board[3][4] = p2.Symbol;
