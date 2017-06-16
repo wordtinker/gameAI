@@ -133,7 +133,7 @@ namespace MiniMax
             int p1Win = 0;
             int tie = 0;
             int p1Lose = 0;
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 1000; i++)
             {
                 Console.WriteLine(i);
                 Tuple<int, int> result =  DoTest();
@@ -167,7 +167,7 @@ namespace MiniMax
         }
         public  void Run()
         {
-            for (int i = 0; i < 1000; i++)
+            for (int i = 0; i < 50000; i++)
             {
                 Console.WriteLine(i);
                 Board board = new Board(playerOne, playerTwo);

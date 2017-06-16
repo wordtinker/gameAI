@@ -26,7 +26,8 @@ namespace MiniMax
         /// <returns></returns>
         public double EvaluateState(Board board)
         {
-            IMLData input = ANNAdapter.Adapt(board);
+            //IMLData input = ANNAdapter.Adapt(board);
+            IMLData input = ANNAdapter.Adapt192(board);
             IMLData output = network.Compute(input);
             return output[0];
         }
@@ -40,7 +41,8 @@ namespace MiniMax
             BasicMLDataSet trainingSet = new BasicMLDataSet();
             BasicMLData ideal = new BasicMLData(1);
             ideal[0] = v;
-            trainingSet.Add(ANNAdapter.Adapt(board), ideal);
+            //trainingSet.Add(ANNAdapter.Adapt(board), ideal);
+            trainingSet.Add(ANNAdapter.Adapt192(board), ideal);
             IMLTrain train = new ResilientPropagation(network, trainingSet);
             train.Iteration();
         }
@@ -69,10 +71,12 @@ namespace MiniMax
         {
             // create a neural network, without using a factory
             network = new BasicNetwork();
-            // input layer with bias
-            network.AddLayer(new BasicLayer(null, true, 128));
-            // hidden layer with bias
-            network.AddLayer(new BasicLayer(new ActivationSigmoid(), true, 60));
+            // input layer
+            network.AddLayer(new BasicLayer(null, false, 192));
+            // hidden layer
+            network.AddLayer(new BasicLayer(new ActivationSigmoid(), false, 60));
+            // second hidden layer
+            //network.AddLayer(new BasicLayer(new ActivationSigmoid(), false, 8));
             // output layer
             network.AddLayer(new BasicLayer(new ActivationSigmoid(), false, 1));
             network.Structure.FinalizeStructure();
@@ -150,6 +154,39 @@ namespace MiniMax
                     {
                         MLData[pos] = 0;
                         MLData[pos + 1] = 0;
+                    }
+                }
+            }
+            return MLData;
+        }
+        /// <summary>
+        /// Adapts Board state to vector of doubles.
+        /// Every position on board consists of three inputs
+        /// 'x' is 1-0-0
+        /// 'o' is 0-1-0
+        /// no piece is 0-0-1
+        /// </summary>
+        /// <param name="state"></param>
+        /// <returns></returns>
+        public static BasicMLData Adapt192(Board state)
+        {
+            BasicMLData MLData = new BasicMLData(192);
+            for (int i = 0; i < state.board.Length; i++)
+            {
+                for (int j = 0; j < state.board[i].Length; j++)
+                {
+                    int pos = 24 * i + 3 * j;
+                    if (state.board[i][j] == state.FirstPlayerSymbol)
+                    {
+                        MLData[pos] = 1;
+                    }
+                    else if (state.board[i][j] == state.SecondPlayerSymbol)
+                    {
+                        MLData[pos + 1] = 1;
+                    }
+                    else
+                    {
+                        MLData[pos + 2] = 1;
                     }
                 }
             }
